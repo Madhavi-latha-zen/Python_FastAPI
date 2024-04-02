@@ -48,7 +48,7 @@
 
 #     person_collection.insert_many(docs)
 # create_documents()
-    
+
 # printer = pprint.PrettyPrinter()
 
 # def find_all_people():
@@ -59,19 +59,19 @@
 #         printer.pprint(person)
 
 # # find_all_people()
-        
+
 # def find_tim():
 #     tim = person_collection.find_one({"first_name":"Tim"})
 #     printer.pprint(tim)
 
 # # find_tim()
-    
+
 # def count_all_people():
 #     count = person_collection.count_documents(filter={})
 #     print("Number of People",count)
 
 # # count_all_people()
-    
+
 # def get_person_by_id(person_id):
 #     from bson.objectid import ObjectId
 
@@ -80,7 +80,7 @@
 #     printer.pprint(person)
 
 # # get_person_by_id("65f2ac6c7dd4f24a21c74000")
-    
+
 # def get_age_range(min_age,max_age):
 #     query = {
 #         "$and" : [
@@ -92,7 +92,7 @@
 #         printer.pprint(person)
 
 # # get_age_range(20,60)
-        
+
 # def project_columns():
 #     columns = {"_id" : 0,"first_name" : 1,"last_name" : 1,}
 #     people = person_collection.find({},columns)
@@ -100,7 +100,7 @@
 #         printer.pprint(person)
 
 # # project_columns()
-        
+
 # def update_person_by_id(person_id):
 #     from bson.objectid import ObjectId
 
@@ -115,12 +115,12 @@
 #     # }
 #     # person_collection.update_one({"_id":_id},all_updates)
 
-#     #removing Updates   
+#     #removing Updates
 
 #     person_collection.update_one({"_id":_id},{"$unset":{"last":""}})
 
-# update_person_by_id("65f3ebb561d6d14c31c62e39")    
-    
+# update_person_by_id("65f3ebb561d6d14c31c62e39")
+
 # def replace_one(person_id):
 #     from bson.objectid import ObjectId
 
@@ -180,37 +180,38 @@
 # add_address_relationship("65f3d0943d4bcb6b0a4f9a60",address)
 
 
-
-
-from flask import Flask, jsonify,request
+from flask import Flask, jsonify, request
 from pymongo import MongoClient
 from bson import ObjectId
 
 app = Flask(__name__)
 
-MONGODB_HOST = 'localhost'
+MONGODB_HOST = "localhost"
 MONGODB_PORT = 27017
-DATABASE_NAME = 'production'
+DATABASE_NAME = "production"
 
 client = MongoClient(MONGODB_HOST, MONGODB_PORT)
 db = client[DATABASE_NAME]
 person_collection = db.person_collection
 
-@app.route('/find_all_people', methods=['GET'])
+
+@app.route("/find_all_people", methods=["GET"])
 def find_all_people():
     try:
         people = list(person_collection.find())
 
         for person in people:
-            person['_id'] = str(person['_id'])
+            person["_id"] = str(person["_id"])
 
         return jsonify(people), 200
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
-    
+        return jsonify({"error": str(e)}), 500
+
+
 from flask import jsonify
 
-@app.route('/get_person_by_id/<string:person_id>', methods=['GET'])
+
+@app.route("/get_person_by_id/<string:person_id>", methods=["GET"])
 def get_person_by_id(person_id):
     try:
         from bson.objectid import ObjectId
@@ -219,40 +220,48 @@ def get_person_by_id(person_id):
         person = person_collection.find_one({"_id": _id})
 
         if person:
-            person['_id'] = str(person['_id'])
+            person["_id"] = str(person["_id"])
             return jsonify(person), 200
         else:
             return jsonify({"error": "Person not found"}), 404
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
-@app.route('/create-person' ,methods =['POST'])
+
+@app.route("/create-person", methods=["POST"])
 def create_person_doc():
     try:
         information = request.json
         result = person_collection.insert_one(information)
-        return jsonify({'message' : "person created successfully" ,"_id" :str(result.inserted_id)}),200
+        return (
+            jsonify(
+                {
+                    "message": "person created successfully",
+                    "_id": str(result.inserted_id),
+                }
+            ),
+            200,
+        )
     except Exception as ele:
-        return jsonify({'error':str(ele)}), 500
-        
+        return jsonify({"error": str(ele)}), 500
 
 
-@app.route('/update-person/<string:person_id>', methods=['PUT'])
+@app.route("/update-person/<string:person_id>", methods=["PUT"])
 def update_person_by_id(person_id):
     try:
         _id = ObjectId(person_id)
         updates = request.json
 
-        updates.pop('_id', None)
+        updates.pop("_id", None)
 
         person_collection.update_one({"_id": _id}, {"$set": updates})
 
         return jsonify({"message": "Person updated successfully"}), 200
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
 
-@app.route('/remove-updated-person/<string:person_id>', methods=['PUT'])
+@app.route("/remove-updated-person/<string:person_id>", methods=["PUT"])
 def remove_updated_person(person_id):
     try:
         _id = ObjectId(person_id)
@@ -261,9 +270,10 @@ def remove_updated_person(person_id):
 
         return jsonify({"message": "Person removed successfully"}), 200
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
-    
-@app.route('/delete-person/<string:person_id>', methods=['DELETE'])    
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/delete-person/<string:person_id>", methods=["DELETE"])
 def delete_doc_by_id(person_id):
     try:
         _id = ObjectId(person_id)
@@ -271,8 +281,8 @@ def delete_doc_by_id(person_id):
 
         return jsonify({"message": "Person deleted successfully"}), 200
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app.run(debug=True)
-
